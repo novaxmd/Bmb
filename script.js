@@ -23,82 +23,26 @@ document.addEventListener('DOMContentLoaded', () => {
         resultContainer.innerHTML = '';
 
         try {
-            // List of TikTok downloader APIs
-            const APIS = [
-                {
-                    name: "Delirius",
-                    url: `https://delirius-apiofc.vercel.app/download/tiktok?url=${encodeURIComponent(url)}`,
-                    parse: (data) => {
-                        if (data.result && data.result.video && data.result.video[0]) {
-                            return {
-                                platform: 'TikTok',
-                                mediaType: 'video',
-                                previewUrl: data.result.cover || "",
-                                quality: 'Default',
-                                downloadUrl: data.result.video[0],
-                                enhancedDownloadUrl: useAI ? data.result.video[0] : null
-                            };
-                        }
-                        return null;
-                    }
-                },
-                {
-                    name: "GiftedTechV2",
-                    url: `https://api.giftedtech.web.id/api/download/tiktokdlv2?apikey=gifted&url=${encodeURIComponent(url)}`,
-                    parse: (data) => {
-                        if (data.result && data.result.video_nowm) {
-                            return {
-                                platform: 'TikTok',
-                                mediaType: 'video',
-                                previewUrl: data.result.thumbnail || "",
-                                quality: 'Default',
-                                downloadUrl: data.result.video_nowm,
-                                enhancedDownloadUrl: useAI ? data.result.video_nowm : null
-                            };
-                        }
-                        return null;
-                    }
-                },
-                {
-                    name: "GiftedTech",
-                    url: `https://api.giftedtech.web.id/api/download/tiktok?apikey=gifted&url=${encodeURIComponent(url)}`,
-                    parse: (data) => {
-                        if (data.result && (data.result.video_nowm || data.result.video)) {
-                            return {
-                                platform: 'TikTok',
-                                mediaType: 'video',
-                                previewUrl: data.result.thumbnail || data.result.cover || "",
-                                quality: 'Default',
-                                downloadUrl: data.result.video_nowm || data.result.video,
-                                enhancedDownloadUrl: useAI ? (data.result.video_nowm || data.result.video) : null
-                            };
-                        }
-                        return null;
-                    }
-                }
-            ];
+            // --- ONLY USE DELIRIUS API ---
+            const apiUrl = `https://delirius-apiofc.vercel.app/download/tiktok?url=${encodeURIComponent(url)}`;
+            const response = await fetch(apiUrl);
 
-            let result = null;
-            let lastError = "";
+            if (!response.ok) throw new Error('Failed to fetch media from TikTok.');
+            const data = await response.json();
 
-            // Try each API until one works
-            for (const api of APIS) {
-                try {
-                    const response = await fetch(api.url);
-                    if (!response.ok) throw new Error(`${api.name} API returned error`);
-                    const data = await response.json();
-                    result = api.parse(data);
-                    if (result) {
-                        break; // Found a valid result, stop trying others
-                    }
-                } catch (err) {
-                    lastError = err.message;
-                }
+            // --- Parse Delirius API Response ---
+            if (!data.result || !data.result.video || !data.result.video[0]) {
+                throw new Error("No video found or invalid TikTok link.");
             }
-
-            if (!result) {
-                throw new Error("Failed to fetch media from all APIs. " + lastError);
-            }
+            
+            const result = {
+                platform: 'TikTok',
+                mediaType: 'video',
+                previewUrl: data.result.cover || "",
+                quality: 'Default',
+                downloadUrl: data.result.video[0],
+                enhancedDownloadUrl: useAI ? data.result.video[0] : null // No AI enhancement, just repeat video link
+            };
 
             displayResult(result);
 

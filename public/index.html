@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Downloader Pro - yt-dlp Powered</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .powered-by {
+            margin-top: 15px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .platforms {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .platform-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .result {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result.success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-left: 5px solid #28a745;
+        }
+
+        .result.error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-left: 5px solid #dc3545;
+        }
+
+        .video-card {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .video-thumbnail {
+            width: 200px;
+            height: 150px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .video-info {
+            flex: 1;
+        }
+
+        .video-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .video-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .tips {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 5px solid #ffc107;
+        }
+
+        .tips h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .tips ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+
+        .tips li {
+            margin: 8px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .video-card {
+                flex-direction: column;
+            }
+
+            .video-thumbnail {
+                width: 100%;
+                height: 200px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎥 Video Downloader Pro</h1>
+            <p>Powered by yt-dlp - The Ultimate Video Downloader</p>
+            <div class="powered-by">⚡ Fast, Reliable, High Quality</div>
+            <div class="platforms">
+                <span class="platform-badge">📱 Threads</span>
+                <span class="platform-badge">🎵 TikTok</span>
+                <span class="platform-badge">📸 Instagram</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <form id="downloadForm">
+                <div class="input-group">
+                    <label for="videoUrl">🔗 Paste Video URL</label>
+                    <input 
+                        type="text" 
+                        id="videoUrl" 
+                        placeholder="https://www.tiktok.com/@user/video/xxx" 
+                        required
+                    >
+                </div>
+                <button type="submit" class="btn" id="downloadBtn">
+                    🚀 Download Video
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text">Memproses video dengan yt-dlp...</div>
+                <div class="loading-text" style="font-size: 14px; margin-top: 10px; opacity: 0.7;">
+                    Mohon tunggu, proses bisa memakan waktu 10-30 detik
+                </div>
+            </div>
+
+            <div class="result" id="result"></div>
+
+            <div class="tips">
+                <h3>💡 Tips & Informasi:</h3>
+                <ul>
+                    <li><strong>yt-dlp</strong> adalah tool download video paling powerful dan up-to-date</li>
+                    <li>Support <strong>1000+ websites</strong> termasuk TikTok, Instagram, Threads</li>
+                    <li>Download dalam <strong>kualitas terbaik</strong> yang tersedia</li>
+                    <li>Pastikan video bersifat <strong>publik</strong> (bukan private)</li>
+                    <li>Untuk Instagram: Gunakan link langsung ke post/reel</li>
+                    <li>Untuk TikTok: Copy link dari tombol "Share"</li>
+                    <li>Proses download bisa memakan waktu tergantung ukuran video</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Made with ❤️ using yt-dlp | Open Source & Free</p>
+            <p style="margin-top: 5px; font-size: 12px;">Respect content creators' rights</p>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('downloadForm');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const urlInput = document.getElementById('videoUrl');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                showError('URL tidak boleh kosong!');
+                return;
+            }
+
+            if (!isValidUrl(url)) {
+                showError('URL tidak valid! Pastikan menggunakan link dari TikTok, Instagram, atau Threads.');
+                return;
+            }
+
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            downloadBtn.disabled = true;
+            downloadBtn.textContent = '⏳ Processing...';
+
+            try {
+                const response = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showSuccess(data);
+                } else {
+                    showError(data.error || 'Gagal memproses video. Coba lagi nanti.');
+                }
+            } catch (error) {
+                showError('Terjadi kesalahan koneksi. Pastikan internet Anda stabil.');
+            } finally {
+                loading.style.display = 'none';
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = '🚀 Download Video';
+            }
+        });
+
+        function isValidUrl(string) {
+            try {
+                const url = new URL(string);
+                const validDomains = ['tiktok.com', 'vt.tiktok.com', 'instagram.com', 'threads.net'];
+                return validDomains.some(domain => url.hostname.includes(domain));
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function showSuccess(data) {
+            result.className = 'result success';
+            result.innerHTML = `
+                <h3 style="color: #155724; margin-bottom: 15px;">✅ Video Berhasil Diproses!</h3>
+                <div class="video-card">
+                    ${data.thumbnail ? `<img src="${data.thumbnail}" alt="Thumbnail" class="video-thumbnail">` : ''}
+                    <div class="video-info">
+                        <div class="video-title">${escapeHtml(data.title)}</div>
+                        <div class="video-meta">
+                            <div class="meta-item">
+                                <span>📱</span>
+                                <span>${data.platform}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>⏱️</span>
+                                <span>${formatDuration(data.duration)}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span>👤</span>
+                                <span>${escapeHtml(data.uploader)}</span>
+                            </div>
+                            ${data.quality ? `
+                            <div class="meta-item">
+                                <span>🎬</span>
+                                <span>${data.quality}</span>
+                            </div>
+                            ` : ''}
+                            ${data.view_count > 0 ? `
+                            <div class="meta-item">
+                                <span>👁️</span>
+                                <span>${formatNumber(data.view_count)} views</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <a href="${data.downloadUrl}" class="download-btn" download target="_blank">
+                            ⬇️ Download Sekarang
+                        </a>
+                    </div>
+                </div>
+            `;
+            result.style.display = 'block';
+        }
+
+        function showError(message) {
+            result.className = 'result error';
+            result.innerHTML = `
+                <h3 style="color: #721c24; margin-bottom: 10px;">❌ Error</h3>
+                <p style="color: #721c24;">${escapeHtml(message)}</p>
+            `;
+            result.style.display = 'block';
+        }
+
+        function formatDuration(seconds) {
+            if (!seconds || seconds === 0) return 'Unknown';
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Auto focus input saat load
+        window.addEventListener('load', () => {
+            urlInput.focus();
+        });
+    </script>
+</body>
+</html>
